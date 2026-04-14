@@ -60,6 +60,19 @@ class TaskStore:
         self._save()
         return task
 
+    def delete(self, task_id: int) -> Optional[dict]:
+        """Remove a task by id and return it, or None if not found."""
+        task = self.get(task_id)
+        if task is None:
+            return None
+        self._tasks = [t for t in self._tasks if t["id"] != task_id]
+        self._save()
+        return task
+
+    def done_tasks(self) -> list[dict]:
+        """Return all completed tasks."""
+        return [t for t in self._tasks if t["done"]]
+
 
 def _format_status(done: bool) -> str:
     return "done" if done else "pending"
@@ -77,26 +90,7 @@ def cmd_list(store: TaskStore) -> None:
     if not tasks:
         print("No tasks yet.")
         return
-
-    # Column widths — at least as wide as the header
-    id_w = max(len(str(t["id"])) for t in tasks)
-    id_w = max(id_w, 2)  # "ID" header
-    status_w = max(len(_format_status(t["done"])) for t in tasks)
-    status_w = max(status_w, 6)  # "Status" header
-    title_w = max(len(t["title"]) for t in tasks)
-    title_w = max(title_w, 5)  # "Title" header
-
-    header = (
-        f"{'ID':<{id_w}} | {'Status':<{status_w}} | {'Title':<{title_w}} | Created"
-    )
-    print(header)
-    print("-" * len(header))
-    for task in tasks:
-        created = task["created"][:10]  # YYYY-MM-DD portion
-        status = _format_status(task["done"])
-        print(
-            f"{task['id']:<{id_w}} | {status:<{status_w}} | {task['title']:<{title_w}} | {created}"
-        )
+    _print_task_table(tasks)
 
 
 def cmd_done(store: TaskStore, task_id: int) -> None:
@@ -106,6 +100,39 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
         print(f"Error: task #{task_id} not found.", file=sys.stderr)
         sys.exit(1)
     print(f"Marked task #{task['id']} as done: {task['title']}")
+
+
+def cmd_delete(store: TaskStore, task_id: int) -> None:
+    """Handle the 'delete' subcommand."""
+    task = store.delete(task_id)
+    if task is None:
+        print("Task not found")
+        return
+    print(f"Deleted task #{task['id']}: {task['title']}")
+
+
+def _print_task_table(tasks: list[dict]) -> None:
+    """Print a table of tasks; prints 'No tasks.' if the list is empty."""
+    if not tasks:
+        print("No tasks.")
+        return
+
+    id_w = max(max(len(str(t["id"])) for t in tasks), 2)
+    status_w = max(max(len(_format_status(t["done"])) for t in tasks), 6)
+    title_w = max(max(len(t["title"]) for t in tasks), 5)
+
+    header = f"{'ID':<{id_w}} | {'Status':<{status_w}} | {'Title':<{title_w}} | Created"
+    print(header)
+    print("-" * len(header))
+    for task in tasks:
+        created = task["created"][:10]
+        status = _format_status(task["done"])
+        print(f"{task['id']:<{id_w}} | {status:<{status_w}} | {task['title']:<{title_w}} | {created}")
+
+
+def cmd_list_done(store: TaskStore) -> None:
+    """Handle the 'list-done' subcommand."""
+    _print_task_table(store.done_tasks())
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -125,6 +152,11 @@ def build_parser() -> argparse.ArgumentParser:
     done_parser = subparsers.add_parser("done", help="Mark a task as done")
     done_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
 
+    delete_parser = subparsers.add_parser("delete", help="Delete a task")
+    delete_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
+
+    subparsers.add_parser("list-done", help="List completed tasks")
+
     return parser
 
 
@@ -140,6 +172,10 @@ def main() -> None:
         cmd_list(store)
     elif args.command == "done":
         cmd_done(store, args.id)
+    elif args.command == "delete":
+        cmd_delete(store, args.id)
+    elif args.command == "list-done":
+        cmd_list_done(store)
 
 
 if __name__ == "__main__":
