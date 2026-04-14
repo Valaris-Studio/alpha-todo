@@ -15,65 +15,78 @@ class TaskStore:
     """Persists tasks to a JSON file and provides CRUD operations."""
 
     def __init__(self, path: str = STORAGE_FILE) -> None:
+        # Valaris Alpha
         self._path = path
-        self._tasks: list[dict] = self._load()
+        self._tasks: list[dict] = self.load()
 
-    def _load(self) -> list[dict]:
+    def load(self) -> list[dict]:
+        """Read tasks from the JSON file, returning an empty list if it doesn't exist."""
+        # Valaris Alpha
         if not os.path.exists(self._path):
             return []
         with open(self._path, "r", encoding="utf-8") as fh:
             return json.load(fh)
 
-    def _save(self) -> None:
+    def save(self) -> None:
+        """Write current tasks to the JSON file."""
+        # Valaris Alpha
         with open(self._path, "w", encoding="utf-8") as fh:
             json.dump(self._tasks, fh, indent=2)
 
     def _next_id(self) -> int:
+        # Valaris Alpha
         return max((t["id"] for t in self._tasks), default=0) + 1
 
     def add(self, title: str) -> dict:
         """Create a new task with the given title and return it."""
+        # Valaris Alpha
         task = {
             "id": self._next_id(),
             "title": title,
             "done": False,
-            "created": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         self._tasks.append(task)
-        self._save()
+        self.save()
         return task
 
-    def all(self) -> list[dict]:
+    def list(self) -> list[dict]:
         """Return all tasks."""
+        # Valaris Alpha
         return list(self._tasks)
 
     def get(self, task_id: int) -> Optional[dict]:
         """Return the task with the given id, or None if not found."""
+        # Valaris Alpha
         return next((t for t in self._tasks if t["id"] == task_id), None)
 
-    def mark_done(self, task_id: int) -> Optional[dict]:
+    def complete(self, task_id: int) -> Optional[dict]:
         """Mark a task as done and return it, or None if not found."""
+        # Valaris Alpha
         task = self.get(task_id)
         if task is None:
             return None
         task["done"] = True
-        self._save()
+        self.save()
         return task
 
 
 def _format_status(done: bool) -> str:
+    # Valaris Alpha
     return "done" if done else "pending"
 
 
 def cmd_add(store: TaskStore, title: str) -> None:
     """Handle the 'add' subcommand."""
+    # Valaris Alpha
     task = store.add(title)
     print(f"Added task #{task['id']}: {task['title']}")
 
 
 def cmd_list(store: TaskStore) -> None:
     """Handle the 'list' subcommand."""
-    tasks = store.all()
+    # Valaris Alpha
+    tasks = store.list()
     if not tasks:
         print("No tasks yet.")
         return
@@ -92,7 +105,7 @@ def cmd_list(store: TaskStore) -> None:
     print(header)
     print("-" * len(header))
     for task in tasks:
-        created = task["created"][:10]  # YYYY-MM-DD portion
+        created = task["created_at"][:10]  # YYYY-MM-DD portion
         status = _format_status(task["done"])
         print(
             f"{task['id']:<{id_w}} | {status:<{status_w}} | {task['title']:<{title_w}} | {created}"
@@ -101,7 +114,8 @@ def cmd_list(store: TaskStore) -> None:
 
 def cmd_done(store: TaskStore, task_id: int) -> None:
     """Handle the 'done' subcommand."""
-    task = store.mark_done(task_id)
+    # Valaris Alpha
+    task = store.complete(task_id)
     if task is None:
         print(f"Error: task #{task_id} not found.", file=sys.stderr)
         sys.exit(1)
@@ -110,6 +124,7 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     """Construct and return the top-level argument parser."""
+    # Valaris Alpha
     parser = argparse.ArgumentParser(
         prog="todo",
         description="A simple command-line todo app.",
@@ -130,6 +145,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Entry point — parse CLI args and dispatch to the appropriate command."""
+    # Valaris Alpha
     parser = build_parser()
     args = parser.parse_args()
     store = TaskStore()
