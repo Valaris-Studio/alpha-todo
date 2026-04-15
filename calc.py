@@ -77,6 +77,19 @@ def absolute(number: float) -> float:
     return abs(number)
 
 
+def logarithm(x: float, base: float = 10) -> float:
+    """Return the logarithm of x in the given base. Raises ValueError for invalid inputs."""
+    _validate_numeric(x, "x")
+    _validate_numeric(base, "base")
+    if x <= 0:
+        raise ValueError("x must be positive")
+    if base <= 0:
+        raise ValueError("base must be positive")
+    if base == 1:
+        raise ValueError("base must not be 1")
+    return math.log(x, base)
+
+
 def floor_val(x: float) -> int:
     """Return the largest integer less than or equal to x."""
     _validate_numeric(x, "x")
@@ -141,6 +154,10 @@ def build_parser() -> argparse.ArgumentParser:
     ceil_sub = subparsers.add_parser("ceil", help="Compute ceiling of a number")
     ceil_sub.add_argument("x", type=float, help="Number to take ceiling of")
 
+    log_sub = subparsers.add_parser("log", help="Compute logarithm of a number")
+    log_sub.add_argument("x", type=float, help="Number to take logarithm of")
+    log_sub.add_argument("--base", type=float, default=10.0, help="Logarithm base (default: 10)")
+
     history_sub = subparsers.add_parser("history", help="Show recent calculation history")
     history_sub.add_argument(
         "--last", type=int, default=10, metavar="N",
@@ -194,6 +211,12 @@ def main() -> None:
         result = ceil_val(args.x)
         print(result)
         append_history(f"ceil({args.x})", result)
+        return
+
+    if args.command == "log":
+        result = logarithm(args.x, args.base)
+        print(result)
+        append_history(f"log({args.x},base={args.base})", result)
         return
 
     operations = {

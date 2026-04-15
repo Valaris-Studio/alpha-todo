@@ -2,7 +2,7 @@
 
 import pytest
 import calc
-from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus, floor_val, ceil_val
+from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus, floor_val, ceil_val, logarithm
 
 
 class TestTypeValidation:
@@ -152,6 +152,50 @@ class TestCeilVal:
         """Verify ceil_val raises TypeError for non-numeric input."""
         with pytest.raises(TypeError):
             ceil_val(None)
+
+
+class TestLogarithm:
+    def test_log10(self):
+        """Verify logarithm returns 2 for log base 10 of 100."""
+        assert logarithm(100, 10) == pytest.approx(2.0)
+
+    def test_log2(self):
+        """Verify logarithm returns 3 for log base 2 of 8."""
+        assert logarithm(8, 2) == pytest.approx(3.0)
+
+    def test_natural_log(self):
+        """Verify logarithm returns 1 for log base e of e."""
+        import math
+        assert logarithm(math.e, math.e) == pytest.approx(1.0)
+
+    def test_default_base_is_10(self):
+        """Verify logarithm uses base 10 when no base is given."""
+        assert logarithm(1000) == pytest.approx(3.0)
+
+    def test_zero_x_raises_value_error(self):
+        """Verify logarithm raises ValueError when x is zero."""
+        with pytest.raises(ValueError, match="x must be positive"):
+            logarithm(0)
+
+    def test_negative_x_raises_value_error(self):
+        """Verify logarithm raises ValueError when x is negative."""
+        with pytest.raises(ValueError, match="x must be positive"):
+            logarithm(-5)
+
+    def test_zero_base_raises_value_error(self):
+        """Verify logarithm raises ValueError when base is zero."""
+        with pytest.raises(ValueError, match="base must be positive"):
+            logarithm(10, 0)
+
+    def test_base_one_raises_value_error(self):
+        """Verify logarithm raises ValueError when base is 1."""
+        with pytest.raises(ValueError, match="base must not be 1"):
+            logarithm(10, 1)
+
+    def test_invalid_type_raises_type_error(self):
+        """Verify logarithm raises TypeError for non-numeric input."""
+        with pytest.raises(TypeError):
+            logarithm("10")
 
 
 class TestAppendHistory:
