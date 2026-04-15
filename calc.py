@@ -74,10 +74,17 @@ def modulo(a: float, b: float) -> float:
     return a % b
 
 
-def absolute(number: float) -> float:
-    """Return the absolute value of number."""
-    # ST5 Validated
-    return abs(number)
+ABSOLUTE_NON_NUMERIC_MESSAGE = "value must be numeric (int or float)"
+
+
+def absolute(value: float) -> float:
+    """Return the absolute value of value.
+
+    Raises ValueError if value is not an int or float.
+    """
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(ABSOLUTE_NON_NUMERIC_MESSAGE)
+    return abs(value)
 
 
 PERCENTAGE_NON_NUMERIC_MESSAGE = "Both value and percent must be numeric"

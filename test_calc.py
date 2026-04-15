@@ -1,8 +1,8 @@
-"""Tests for divide, power, sqrt, percentage, factorial, append_history, and show_history in calc.py."""
+"""Tests for divide, power, sqrt, absolute, percentage, factorial, append_history, and show_history in calc.py."""
 
 import pytest
 import calc
-from calc import divide, factorial, percentage, power, sqrt, append_history, show_history
+from calc import absolute, divide, factorial, percentage, power, sqrt, append_history, show_history
 
 
 def test_divide_normal_values():
@@ -68,6 +68,38 @@ class TestPower:
         """Verify that a boolean exponent raises ValueError."""
         with pytest.raises(ValueError, match="Both base and exponent must be numeric"):
             power(2, False)
+
+
+class TestAbsolute:
+    def test_positive_input_unchanged(self):
+        """Verify that a positive integer is returned as-is."""
+        assert absolute(5) == 5
+
+    def test_negative_input_returns_positive(self):
+        """Verify that a negative integer returns its positive counterpart."""
+        assert absolute(-7) == 7
+
+    def test_zero_returns_zero(self):
+        """Verify that absolute(0) returns 0."""
+        assert absolute(0) == 0
+
+    def test_float_positive(self):
+        """Verify that a positive float is returned unchanged."""
+        assert absolute(3.14) == pytest.approx(3.14)
+
+    def test_float_negative(self):
+        """Verify that a negative float returns its positive counterpart."""
+        assert absolute(-2.718) == pytest.approx(2.718)
+
+    def test_non_numeric_string_raises_value_error(self):
+        """Verify that a string argument raises ValueError."""
+        with pytest.raises(ValueError, match="value must be numeric"):
+            absolute("hello")
+
+    def test_bool_raises_value_error(self):
+        """Verify that a boolean argument raises ValueError (bool is not treated as numeric)."""
+        with pytest.raises(ValueError, match="value must be numeric"):
+            absolute(True)
 
 
 def test_sqrt_positive_number():
