@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
+from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, cmd_delete, cmd_list_done, cmd_greet, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
 
 
 @pytest.fixture
@@ -122,3 +122,127 @@ def test_priority_persists(tmp_path):
 
     store2 = TaskStore(path=path)
     assert store2.all()[0]["priority"] == "high"
+
+
+# --- TaskStore.delete ---
+
+def test_delete_happy_path(tmp_path):
+    path = str(tmp_path / "tasks.json")
+    store = TaskStore(path=path)
+    store.add("To delete")
+    store.add("To keep")
+
+    deleted = store.delete(1)
+    assert deleted is not None
+    assert deleted["title"] == "To delete"
+    assert len(store.all()) == 1
+    assert store.get(1) is None
+
+    # Verify persisted to file
+    reloaded = TaskStore(path=path)
+    assert len(reloaded.all()) == 1
+    assert reloaded.get(1) is None
+
+
+def test_delete_not_found(tmp_store):
+    result = tmp_store.delete(999)
+    assert result is None
+
+
+# --- TaskStore.done_tasks ---
+
+def test_done_tasks_returns_only_completed(tmp_store):
+    tmp_store.add("Pending task")
+    tmp_store.add("Completed task")
+    tmp_store.mark_done(2)
+
+    done = tmp_store.done_tasks()
+    assert len(done) == 1
+    assert done[0]["title"] == "Completed task"
+
+
+def test_done_tasks_empty_when_none_done(tmp_store):
+    tmp_store.add("Not done yet")
+    assert tmp_store.done_tasks() == []
+
+
+# --- cmd_delete ---
+
+def test_cmd_delete_prints_confirmation(tmp_store, capsys):
+    tmp_store.add("Deletable")
+    cmd_delete(tmp_store, 1)
+    captured = capsys.readouterr()
+    assert "Deleted task #1" in captured.out
+    assert "Deletable" in captured.out
+
+
+def test_cmd_delete_invalid_id_exits(tmp_store, capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        cmd_delete(tmp_store, 999)
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error: task #999 not found." in captured.err
+
+
+# --- cmd_list_done ---
+
+def test_cmd_list_done_shows_completed(tmp_store, capsys):
+    tmp_store.add("Done task", priority="high")
+    tmp_store.mark_done(1)
+    cmd_list_done(tmp_store)
+    captured = capsys.readouterr()
+    lines = captured.out.strip().split("\n")
+    assert "Priority" in lines[0]
+    assert "done" in lines[2].lower()
+    assert "Done task" in lines[2]
+
+
+def test_cmd_list_done_empty(tmp_store, capsys):
+    tmp_store.add("Not completed")
+    cmd_list_done(tmp_store)
+    captured = capsys.readouterr()
+    assert "No completed tasks." in captured.out
+
+
+# --- build_parser: delete and list-done ---
+
+def test_parser_delete_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["delete", "42"])
+    assert args.command == "delete"
+    assert args.id == 42
+
+
+def test_parser_list_done_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["list-done"])
+    assert args.command == "list-done"
+
+
+# --- cmd_greet ---
+
+def test_cmd_greet_prints_greeting(capsys):
+    cmd_greet("Alice")
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Hello, Alice!"
+
+
+def test_cmd_greet_with_spaces_in_name(capsys):
+    cmd_greet("Bob Smith")
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Hello, Bob Smith!"
+
+
+# --- build_parser: greet ---
+
+def test_parser_greet_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["greet", "World"])
+    assert args.command == "greet"
+    assert args.name == "World"
+
+
+def test_parser_greet_missing_name():
+    parser = build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["greet"])
