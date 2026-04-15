@@ -1,6 +1,7 @@
 """CLI Todo App — Milestone Alpha validation project."""
 
 import argparse
+import csv
 import json
 import os
 import sys
@@ -142,6 +143,25 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
     print(f"Marked task #{task['id']} as done: {task['title']}")
 
 
+def cmd_export(store: TaskStore, output: str) -> None:
+    """Handle the 'export' subcommand — write all tasks to a CSV file."""
+    # Valaris Alpha
+    tasks = store.all()
+    if not tasks:
+        print("No tasks to export")
+        return
+    try:
+        with open(output, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(["id", "title", "done", "created_at"])
+            for task in tasks:
+                writer.writerow([task["id"], task["title"], task["done"], task["created"]])
+    except OSError as exc:
+        print(f"Error writing to {output}: {exc}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Exported {len(tasks)} tasks to {output}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct and return the top-level argument parser."""
     # Valaris Alpha
@@ -166,6 +186,13 @@ def build_parser() -> argparse.ArgumentParser:
     done_parser = subparsers.add_parser("done", help="Mark a task as done")
     done_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
 
+    export_parser = subparsers.add_parser("export", help="Export tasks to CSV")
+    export_parser.add_argument(
+        "--output",
+        default="tasks.csv",
+        help="Output CSV filename (default: tasks.csv)",
+    )
+
     return parser
 
 
@@ -182,6 +209,8 @@ def main() -> None:
         cmd_list(store)
     elif args.command == "done":
         cmd_done(store, args.id)
+    elif args.command == "export":
+        cmd_export(store, args.output)
 
 
 if __name__ == "__main__":
