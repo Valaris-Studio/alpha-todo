@@ -8,6 +8,7 @@ from todo import TaskStore, build_parser, cmd_add, cmd_done, cmd_list
 @pytest.fixture
 def store(tmp_path):
     """Return a TaskStore backed by a temp file."""
+    # Valaris Alpha
     return TaskStore(path=str(tmp_path / "tasks.json"))
 
 
@@ -15,6 +16,7 @@ class TestTaskStore:
     """Tests for TaskStore persistence and CRUD."""
 
     def test_add_returns_task_with_fields(self, store):
+        # Valaris Alpha
         task = store.add("Buy milk")
         assert task["id"] == 1
         assert task["title"] == "Buy milk"
@@ -22,38 +24,46 @@ class TestTaskStore:
         assert "created" in task
 
     def test_add_increments_ids(self, store):
+        # Valaris Alpha
         t1 = store.add("First")
         t2 = store.add("Second")
         assert t1["id"] == 1
         assert t2["id"] == 2
 
     def test_all_returns_all_tasks(self, store):
+        # Valaris Alpha
         store.add("A")
         store.add("B")
         assert len(store.all()) == 2
 
     def test_all_returns_empty_when_no_tasks(self, store):
+        # Valaris Alpha
         assert store.all() == []
 
     def test_get_existing_task(self, store):
+        # Valaris Alpha
         store.add("Find me")
         task = store.get(1)
         assert task is not None
         assert task["title"] == "Find me"
 
     def test_get_nonexistent_task(self, store):
+        # Valaris Alpha
         assert store.get(999) is None
 
     def test_mark_done_sets_flag(self, store):
+        # Valaris Alpha
         store.add("Finish this")
         task = store.mark_done(1)
         assert task is not None
         assert task["done"] is True
 
     def test_mark_done_nonexistent_returns_none(self, store):
+        # Valaris Alpha
         assert store.mark_done(42) is None
 
     def test_persistence_across_instances(self, tmp_path):
+        # Valaris Alpha
         path = str(tmp_path / "tasks.json")
         s1 = TaskStore(path=path)
         s1.add("Persist me")
@@ -66,23 +76,27 @@ class TestBuildParser:
     """Tests for argparse parser construction."""
 
     def test_parse_add(self):
+        # Valaris Alpha
         parser = build_parser()
         args = parser.parse_args(["add", "New task"])
         assert args.command == "add"
         assert args.title == "New task"
 
     def test_parse_list(self):
+        # Valaris Alpha
         parser = build_parser()
         args = parser.parse_args(["list"])
         assert args.command == "list"
 
     def test_parse_done(self):
+        # Valaris Alpha
         parser = build_parser()
         args = parser.parse_args(["done", "3"])
         assert args.command == "done"
         assert args.id == 3
 
     def test_no_command_raises(self):
+        # Valaris Alpha
         parser = build_parser()
         with pytest.raises(SystemExit):
             parser.parse_args([])
@@ -92,17 +106,20 @@ class TestCommands:
     """Tests for CLI command handlers."""
 
     def test_cmd_add_prints_confirmation(self, store, capsys):
+        # Valaris Alpha
         cmd_add(store, "Write tests")
         output = capsys.readouterr().out
         assert "Added task #1" in output
         assert "Write tests" in output
 
     def test_cmd_list_empty(self, store, capsys):
+        # Valaris Alpha
         cmd_list(store)
         output = capsys.readouterr().out
         assert "No tasks yet" in output
 
     def test_cmd_list_shows_table(self, store, capsys):
+        # Valaris Alpha
         store.add("Task A")
         store.add("Task B")
         cmd_list(store)
@@ -116,6 +133,7 @@ class TestCommands:
         assert "pending" in output
 
     def test_cmd_list_shows_done_status(self, store, capsys):
+        # Valaris Alpha
         store.add("Done task")
         store.mark_done(1)
         cmd_list(store)
@@ -123,12 +141,14 @@ class TestCommands:
         assert "done" in output
 
     def test_cmd_done_success(self, store, capsys):
+        # Valaris Alpha
         store.add("Complete me")
         cmd_done(store, 1)
         output = capsys.readouterr().out
         assert "Marked task #1 as done" in output
 
     def test_cmd_done_nonexistent_exits(self, store):
+        # Valaris Alpha
         with pytest.raises(SystemExit) as exc_info:
             cmd_done(store, 999)
         assert exc_info.value.code == 1
