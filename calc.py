@@ -50,6 +50,21 @@ def sqrt(number: float) -> float:
     return math.sqrt(number)
 
 
+def modulo(a: float, b: float) -> float:
+    """Return a modulo b. Exits with code 1 on division by zero."""
+    # ST5 Validated
+    if b == 0:
+        print("Error: modulo by zero", file=sys.stderr)
+        sys.exit(1)
+    return a % b
+
+
+def absolute(number: float) -> float:
+    """Return the absolute value of number."""
+    # ST5 Validated
+    return abs(number)
+
+
 def append_history(expression: str, result: float) -> None:
     """Append a calculation entry to ~/.calc_history in 'expr=result' format."""
     # ST5 Validated
@@ -89,6 +104,13 @@ def build_parser() -> argparse.ArgumentParser:
     sqrt_sub = subparsers.add_parser("sqrt", help="Compute square root of a number")
     sqrt_sub.add_argument("number", type=float, help="Number to take square root of")
 
+    mod_sub = subparsers.add_parser("mod", help="Compute a modulo b")
+    mod_sub.add_argument("a", type=float, help="Dividend")
+    mod_sub.add_argument("b", type=float, help="Divisor")
+
+    abs_sub = subparsers.add_parser("abs", help="Compute absolute value of a number")
+    abs_sub.add_argument("number", type=float, help="Number to take absolute value of")
+
     history_sub = subparsers.add_parser("history", help="Show recent calculation history")
     history_sub.add_argument(
         "--last", type=int, default=10, metavar="N",
@@ -118,6 +140,18 @@ def main() -> None:
         result = sqrt(args.number)
         print(result)
         append_history(f"sqrt({args.number})", result)
+        return
+
+    if args.command == "mod":
+        result = modulo(args.a, args.b)
+        print(result)
+        append_history(f"{args.a}%{args.b}", result)
+        return
+
+    if args.command == "abs":
+        result = absolute(args.number)
+        print(result)
+        append_history(f"abs({args.number})", result)
         return
 
     operations = {
