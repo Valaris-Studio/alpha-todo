@@ -86,6 +86,16 @@ class TaskStore:
         self._save()
         return task
 
+    def mark_undone(self, task_id: int) -> Optional[dict]:
+        """Mark a task as not done and return it, or None if not found."""
+        # Valaris Alpha
+        task = self.get(task_id)
+        if task is None:
+            return None
+        task["done"] = False
+        self._save()
+        return task
+
 
 def _format_status(done: bool) -> str:
     # Valaris Alpha
@@ -142,6 +152,20 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
     print(f"Marked task #{task['id']} as done: {task['title']}")
 
 
+def cmd_undo(store: TaskStore, task_id: int) -> None:
+    """Handle the 'undo' subcommand."""
+    # Valaris Alpha
+    task = store.get(task_id)
+    if task is None:
+        print("Task not found")
+        sys.exit(1)
+    if not task["done"]:
+        print(f"Task {task_id} is not completed")
+        return
+    store.mark_undone(task_id)
+    print(f"Task {task_id} reopened: {task['title']}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct and return the top-level argument parser."""
     # Valaris Alpha
@@ -166,6 +190,9 @@ def build_parser() -> argparse.ArgumentParser:
     done_parser = subparsers.add_parser("done", help="Mark a task as done")
     done_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
 
+    undo_parser = subparsers.add_parser("undo", help="Reopen a completed task")
+    undo_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
+
     return parser
 
 
@@ -182,6 +209,8 @@ def main() -> None:
         cmd_list(store)
     elif args.command == "done":
         cmd_done(store, args.id)
+    elif args.command == "undo":
+        cmd_undo(store, args.id)
 
 
 if __name__ == "__main__":
