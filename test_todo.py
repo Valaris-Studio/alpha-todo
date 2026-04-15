@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
+from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, cmd_undo, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
 
 
 @pytest.fixture
@@ -122,3 +122,51 @@ def test_priority_persists(tmp_path):
 
     store2 = TaskStore(path=path)
     assert store2.all()[0]["priority"] == "high"
+
+
+# --- TaskStore.mark_undone ---
+
+def test_mark_undone_reopens_task(tmp_store):
+    task = tmp_store.add("Finish report")
+    tmp_store.mark_done(task["id"])
+    result = tmp_store.mark_undone(task["id"])
+    assert result is not None
+    assert result["done"] is False
+
+
+def test_mark_undone_not_found(tmp_store):
+    result = tmp_store.mark_undone(999)
+    assert result is None
+
+
+# --- cmd_undo ---
+
+def test_cmd_undo_reopens_completed_task(tmp_store, capsys):
+    task = tmp_store.add("Deploy app")
+    tmp_store.mark_done(task["id"])
+    cmd_undo(tmp_store, task["id"])
+    captured = capsys.readouterr()
+    assert f"Task {task['id']} reopened: Deploy app" in captured.out
+    assert tmp_store.get(task["id"])["done"] is False
+
+
+def test_cmd_undo_already_not_done(tmp_store, capsys):
+    task = tmp_store.add("Pending task")
+    cmd_undo(tmp_store, task["id"])
+    captured = capsys.readouterr()
+    assert f"Task {task['id']} is not completed" in captured.out
+
+
+def test_cmd_undo_not_found(tmp_store):
+    with pytest.raises(SystemExit) as exc_info:
+        cmd_undo(tmp_store, 999)
+    assert exc_info.value.code == 1
+
+
+# --- CLI parser undo ---
+
+def test_parser_undo():
+    parser = build_parser()
+    args = parser.parse_args(["undo", "3"])
+    assert args.command == "undo"
+    assert args.id == 3
