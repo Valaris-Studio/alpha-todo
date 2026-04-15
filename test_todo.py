@@ -1,10 +1,5 @@
 """Tests for the CLI todo app."""
 
-import json
-import os
-import tempfile
-from unittest.mock import patch
-
 import pytest
 
 from todo import TaskStore, build_parser, cmd_add, cmd_done, cmd_list
