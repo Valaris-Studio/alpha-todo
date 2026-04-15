@@ -36,10 +36,24 @@ def divide(a: float, b: float) -> float:
     return a / b
 
 
+POWER_NON_NUMERIC_MESSAGE = "Both base and exponent must be numeric"
+
+ZERO_TO_ZERO_RESULT = 1
+
+
 def power(base: float, exponent: float) -> float:
-    """Return base raised to the power of exponent."""
-    # ST5 Validated
-    return base ** exponent
+    """Return base raised to the power of exponent.
+
+    Handles: 0**0 returns 1, negative exponents return float,
+    non-numeric input raises ValueError.
+    """
+    if isinstance(base, bool) or not isinstance(base, (int, float)):
+        raise ValueError(POWER_NON_NUMERIC_MESSAGE)
+    if isinstance(exponent, bool) or not isinstance(exponent, (int, float)):
+        raise ValueError(POWER_NON_NUMERIC_MESSAGE)
+    if base == 0 and exponent == 0:
+        return float(ZERO_TO_ZERO_RESULT)
+    return float(base ** exponent)
 
 
 def sqrt(number: float) -> float:

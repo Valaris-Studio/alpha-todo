@@ -25,14 +25,49 @@ def test_divide_by_zero_error_message():
     assert str(exc_info.value) == "Division by zero is not allowed"
 
 
-def test_power_positive_exponent():
-    # ST5 Validated
-    assert power(2, 3) == 8.0
+class TestPower:
+    def test_positive_exponent(self):
+        """Verify that 2^3 returns 8."""
+        assert power(2, 3) == 8.0
 
+    def test_zero_exponent(self):
+        """Verify that any base raised to 0 returns 1."""
+        assert power(5, 0) == 1.0
 
-def test_power_zero_exponent():
-    # ST5 Validated
-    assert power(5, 0) == 1.0
+    def test_zero_to_zero_returns_one(self):
+        """Verify the edge case 0^0 returns 1 per mathematical convention."""
+        assert power(0, 0) == 1.0
+
+    def test_negative_exponent_returns_float(self):
+        """Verify that a negative exponent returns a float (reciprocal)."""
+        result = power(2, -1)
+        assert result == 0.5
+        assert isinstance(result, float)
+
+    def test_large_numbers(self):
+        """Verify that large exponents compute correctly without error."""
+        assert power(2, 10) == 1024.0
+        assert power(10, 6) == 1_000_000.0
+
+    def test_non_numeric_base_raises_value_error(self):
+        """Verify that a non-numeric base raises ValueError."""
+        with pytest.raises(ValueError, match="Both base and exponent must be numeric"):
+            power("two", 3)
+
+    def test_non_numeric_exponent_raises_value_error(self):
+        """Verify that a non-numeric exponent raises ValueError."""
+        with pytest.raises(ValueError, match="Both base and exponent must be numeric"):
+            power(2, "three")
+
+    def test_bool_base_raises_value_error(self):
+        """Verify that a boolean base raises ValueError (bool is not treated as numeric)."""
+        with pytest.raises(ValueError, match="Both base and exponent must be numeric"):
+            power(True, 2)
+
+    def test_bool_exponent_raises_value_error(self):
+        """Verify that a boolean exponent raises ValueError."""
+        with pytest.raises(ValueError, match="Both base and exponent must be numeric"):
+            power(2, False)
 
 
 def test_sqrt_positive_number():
