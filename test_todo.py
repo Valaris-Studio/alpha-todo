@@ -6,7 +6,10 @@ import tempfile
 
 import pytest
 
-from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
+from todo import (
+    TaskStore, build_parser, cmd_add, cmd_list, cmd_done, cmd_delete,
+    cmd_list_done, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES,
+)
 
 
 @pytest.fixture
@@ -122,3 +125,95 @@ def test_priority_persists(tmp_path):
 
     store2 = TaskStore(path=path)
     assert store2.all()[0]["priority"] == "high"
+
+
+# --- TaskStore.delete ---
+
+def test_delete_returns_deleted_task(tmp_store):
+    task = tmp_store.add("Delete me")
+    result = tmp_store.delete(task["id"])
+    assert result["title"] == "Delete me"
+    assert tmp_store.all() == []
+
+
+def test_delete_not_found_returns_none(tmp_store):
+    assert tmp_store.delete(999) is None
+
+
+def test_delete_persists(tmp_path):
+    path = str(tmp_path / "tasks.json")
+    store = TaskStore(path=path)
+    task = store.add("Will be deleted")
+    store.delete(task["id"])
+
+    reloaded = TaskStore(path=path)
+    assert reloaded.all() == []
+
+
+# --- TaskStore.done_tasks ---
+
+def test_done_tasks_returns_only_completed(tmp_store):
+    tmp_store.add("Pending task")
+    tmp_store.add("Done task")
+    tmp_store.mark_done(2)
+    done = tmp_store.done_tasks()
+    assert len(done) == 1
+    assert done[0]["title"] == "Done task"
+
+
+def test_done_tasks_empty_when_none_done(tmp_store):
+    tmp_store.add("Not done")
+    assert tmp_store.done_tasks() == []
+
+
+# --- cmd_delete ---
+
+def test_cmd_delete_prints_confirmation(tmp_store, capsys):
+    tmp_store.add("To delete")
+    cmd_delete(tmp_store, 1)
+    captured = capsys.readouterr()
+    assert "Deleted task #1" in captured.out
+    assert "To delete" in captured.out
+
+
+def test_cmd_delete_not_found_exits(tmp_store, capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        cmd_delete(tmp_store, 999)
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "not found" in captured.err
+
+
+# --- cmd_list_done ---
+
+def test_cmd_list_done_shows_completed(tmp_store, capsys):
+    tmp_store.add("Done one")
+    tmp_store.add("Pending one")
+    tmp_store.mark_done(1)
+    cmd_list_done(tmp_store)
+    captured = capsys.readouterr()
+    assert "Done one" in captured.out
+    assert "Pending one" not in captured.out
+    assert "Status" in captured.out
+
+
+def test_cmd_list_done_empty(tmp_store, capsys):
+    tmp_store.add("Not done yet")
+    cmd_list_done(tmp_store)
+    captured = capsys.readouterr()
+    assert "No completed tasks." in captured.out
+
+
+# --- Parser: delete and list-done ---
+
+def test_parser_delete_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["delete", "42"])
+    assert args.command == "delete"
+    assert args.id == 42
+
+
+def test_parser_list_done_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["list-done"])
+    assert args.command == "list-done"
