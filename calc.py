@@ -26,12 +26,13 @@ def multiply(a: float, b: float) -> float:
     return a * b
 
 
+DIVISION_BY_ZERO_MESSAGE = "Division by zero is not allowed"
+
+
 def divide(a: float, b: float) -> float:
-    """Return the quotient of a divided by b. Exits with code 1 on division by zero."""
-    # ST5 Validated
+    """Return the quotient of a divided by b. Raises ValueError on division by zero."""
     if b == 0:
-        print("Error: division by zero", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError(DIVISION_BY_ZERO_MESSAGE)
     return a / b
 
 
@@ -161,7 +162,11 @@ def main() -> None:
         "divide": divide,
     }
     op_symbols = {"add": "+", "subtract": "-", "multiply": "*", "divide": "/"}
-    result = operations[args.command](args.a, args.b)
+    try:
+        result = operations[args.command](args.a, args.b)
+    except ValueError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        sys.exit(1)
     print(result)
     append_history(f"{args.a}{op_symbols[args.command]}{args.b}", result)
 
