@@ -1,8 +1,8 @@
-"""Tests for divide, power, sqrt, percentage, append_history, and show_history in calc.py."""
+"""Tests for divide, power, sqrt, percentage, factorial, append_history, and show_history in calc.py."""
 
 import pytest
 import calc
-from calc import divide, percentage, power, sqrt, append_history, show_history
+from calc import divide, factorial, percentage, power, sqrt, append_history, show_history
 
 
 def test_divide_normal_values():
@@ -94,6 +94,40 @@ class TestPercentage:
         """Verify that a boolean percent argument raises ValueError."""
         with pytest.raises(ValueError, match="Both value and percent must be numeric"):
             percentage(100, False)
+
+
+class TestFactorial:
+    def test_factorial_zero_returns_one(self):
+        """Verify that factorial(0) returns 1 (base case)."""
+        assert factorial(0) == 1
+
+    def test_factorial_five(self):
+        """Verify that factorial(5) returns 120."""
+        assert factorial(5) == 120
+
+    def test_factorial_ten(self):
+        """Verify that factorial(10) returns 3628800."""
+        assert factorial(10) == 3628800
+
+    def test_negative_input_raises_value_error(self):
+        """Verify that a negative integer raises ValueError."""
+        with pytest.raises(ValueError):
+            factorial(-1)
+
+    def test_float_input_raises_value_error(self):
+        """Verify that a float input raises ValueError (floats are not integers)."""
+        with pytest.raises(ValueError):
+            factorial(5.0)
+
+    def test_exceeds_max_raises_value_error(self):
+        """Verify that n > MAX_FACTORIAL_INPUT raises ValueError."""
+        with pytest.raises(ValueError):
+            factorial(calc.MAX_FACTORIAL_INPUT + 1)
+
+    def test_max_allowed_input_does_not_raise(self):
+        """Verify that factorial(MAX_FACTORIAL_INPUT) runs without error."""
+        result = factorial(calc.MAX_FACTORIAL_INPUT)
+        assert result > 0
 
 
 class TestAppendHistory:

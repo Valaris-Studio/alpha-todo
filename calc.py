@@ -68,6 +68,29 @@ def absolute(number: float) -> float:
 
 PERCENTAGE_NON_NUMERIC_MESSAGE = "Both value and percent must be numeric"
 
+MAX_FACTORIAL_INPUT = 170
+FACTORIAL_NEGATIVE_MESSAGE = "n must be a non-negative integer"
+FACTORIAL_NON_INTEGER_MESSAGE = "n must be a non-negative integer"
+FACTORIAL_OVERFLOW_MESSAGE = f"n must not exceed {MAX_FACTORIAL_INPUT}"
+
+
+def factorial(n: int) -> int:
+    """Return n! (n factorial) using iteration.
+
+    Raises ValueError if n is negative, not an integer, or exceeds MAX_FACTORIAL_INPUT.
+    Returns 1 for factorial(0).
+    """
+    if isinstance(n, bool) or not isinstance(n, int):
+        raise ValueError(FACTORIAL_NON_INTEGER_MESSAGE)
+    if n < 0:
+        raise ValueError(FACTORIAL_NEGATIVE_MESSAGE)
+    if n > MAX_FACTORIAL_INPUT:
+        raise ValueError(FACTORIAL_OVERFLOW_MESSAGE)
+    result = 1
+    for factor in range(2, n + 1):
+        result *= factor
+    return result
+
 
 def percentage(value: float, percent: float) -> float:
     """Return the given percent of value (i.e. value * percent / 100).
@@ -131,6 +154,9 @@ def build_parser() -> argparse.ArgumentParser:
     pct_sub.add_argument("value", type=float, help="Base value")
     pct_sub.add_argument("percent", type=float, help="Percentage to compute")
 
+    factorial_sub = subparsers.add_parser("factorial", help="Compute factorial of a non-negative integer")
+    factorial_sub.add_argument("n", type=int, help="Non-negative integer")
+
     history_sub = subparsers.add_parser("history", help="Show recent calculation history")
     history_sub.add_argument(
         "--last", type=int, default=10, metavar="N",
@@ -148,6 +174,16 @@ def main() -> None:
 
     if args.command == "history":
         show_history(args.last)
+        return
+
+    if args.command == "factorial":
+        try:
+            result = factorial(args.n)
+        except ValueError as error:
+            print(f"Error: {error}", file=sys.stderr)
+            sys.exit(1)
+        print(result)
+        append_history(f"factorial({args.n})", result)
         return
 
     if args.command == "power":
