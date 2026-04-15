@@ -86,6 +86,21 @@ class TaskStore:
         self._save()
         return task
 
+    def delete(self, task_id: int) -> Optional[dict]:
+        """Remove a task by id and return it, or None if not found."""
+        # Valaris Alpha
+        task = self.get(task_id)
+        if task is None:
+            return None
+        self._tasks = [t for t in self._tasks if t["id"] != task_id]
+        self._save()
+        return task
+
+    def done_tasks(self) -> list[dict]:
+        """Return all completed tasks."""
+        # Valaris Alpha
+        return [t for t in self._tasks if t["done"]]
+
 
 def _format_status(done: bool) -> str:
     # Valaris Alpha
@@ -142,6 +157,44 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
     print(f"Marked task #{task['id']} as done: {task['title']}")
 
 
+def cmd_delete(store: TaskStore, task_id: int) -> None:
+    """Handle the 'delete' subcommand."""
+    # Valaris Alpha
+    task = store.delete(task_id)
+    if task is None:
+        print("Task not found")
+        return
+    print(f"Deleted task #{task['id']}: {task['title']}")
+
+
+def cmd_list_done(store: TaskStore) -> None:
+    """Handle the 'list-done' subcommand."""
+    # Valaris Alpha
+    tasks = store.done_tasks()
+    if not tasks:
+        print("No completed tasks.")
+        return
+
+    id_w = max(max(len(str(t["id"])) for t in tasks), 2)
+    prio_w = max(max(len(t["priority"]) for t in tasks), 8)
+    status_w = max(max(len(_format_status(t["done"])) for t in tasks), 6)
+    title_w = max(max(len(t["title"]) for t in tasks), 5)
+
+    header = (
+        f"{'ID':<{id_w}} | {'Priority':<{prio_w}} | "
+        f"{'Status':<{status_w}} | {'Title':<{title_w}} | Created"
+    )
+    print(header)
+    print("-" * len(header))
+    for task in tasks:
+        created = task["created"][:10]
+        status = _format_status(task["done"])
+        print(
+            f"{task['id']:<{id_w}} | {task['priority']:<{prio_w}} | "
+            f"{status:<{status_w}} | {task['title']:<{title_w}} | {created}"
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct and return the top-level argument parser."""
     # Valaris Alpha
@@ -166,6 +219,11 @@ def build_parser() -> argparse.ArgumentParser:
     done_parser = subparsers.add_parser("done", help="Mark a task as done")
     done_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
 
+    delete_parser = subparsers.add_parser("delete", help="Delete a task")
+    delete_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
+
+    subparsers.add_parser("list-done", help="List completed tasks")
+
     return parser
 
 
@@ -182,6 +240,10 @@ def main() -> None:
         cmd_list(store)
     elif args.command == "done":
         cmd_done(store, args.id)
+    elif args.command == "delete":
+        cmd_delete(store, args.id)
+    elif args.command == "list-done":
+        cmd_list_done(store)
 
 
 if __name__ == "__main__":
