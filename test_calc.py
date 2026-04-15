@@ -1,8 +1,46 @@
-"""Tests for divide, power, sqrt, append_history, and show_history in calc.py."""
+"""Tests for divide, power, sqrt, append_history, show_history, and type validation in calc.py."""
 
 import pytest
 import calc
-from calc import divide, power, sqrt, append_history, show_history
+from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history
+
+
+class TestTypeValidation:
+    """Verify that add/subtract/multiply/divide reject non-numeric inputs."""
+
+    @pytest.mark.parametrize("op", [add, subtract, multiply, divide])
+    def test_string_input_raises_type_error(self, op):
+        """Raise TypeError when the first argument is a string."""
+        with pytest.raises(TypeError):
+            op("2", 3)
+
+    @pytest.mark.parametrize("op", [add, subtract, multiply, divide])
+    def test_none_input_raises_type_error(self, op):
+        """Raise TypeError when the second argument is None."""
+        with pytest.raises(TypeError):
+            op(1, None)
+
+    @pytest.mark.parametrize("op", [add, subtract, multiply, divide])
+    def test_list_input_raises_type_error(self, op):
+        """Raise TypeError when the first argument is a list."""
+        with pytest.raises(TypeError):
+            op([1, 2], 3)
+
+    def test_add_valid_int_and_float(self):
+        """Verify add works with normal int and float inputs."""
+        assert add(1, 2.5) == 3.5
+
+    def test_subtract_valid_inputs(self):
+        """Verify subtract works with normal inputs."""
+        assert subtract(5, 3) == 2
+
+    def test_multiply_valid_inputs(self):
+        """Verify multiply works with normal inputs."""
+        assert multiply(4, 2.5) == 10.0
+
+    def test_divide_valid_inputs(self):
+        """Verify divide works with normal inputs."""
+        assert divide(9.0, 3) == 3.0
 
 
 def test_divide_normal_values():
