@@ -6,7 +6,7 @@ import tempfile
 
 import pytest
 
-from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, cmd_delete, cmd_list_done, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
+from todo import TaskStore, build_parser, cmd_add, cmd_list, cmd_done, cmd_delete, cmd_list_done, cmd_greet, validate_priority, DEFAULT_PRIORITY, VALID_PRIORITIES
 
 
 @pytest.fixture
@@ -217,3 +217,32 @@ def test_parser_list_done_subcommand():
     parser = build_parser()
     args = parser.parse_args(["list-done"])
     assert args.command == "list-done"
+
+
+# --- cmd_greet ---
+
+def test_cmd_greet_prints_greeting(capsys):
+    cmd_greet("Alice")
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Hello, Alice!"
+
+
+def test_cmd_greet_with_spaces_in_name(capsys):
+    cmd_greet("Bob Smith")
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "Hello, Bob Smith!"
+
+
+# --- build_parser: greet ---
+
+def test_parser_greet_subcommand():
+    parser = build_parser()
+    args = parser.parse_args(["greet", "World"])
+    assert args.command == "greet"
+    assert args.name == "World"
+
+
+def test_parser_greet_missing_name():
+    parser = build_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["greet"])

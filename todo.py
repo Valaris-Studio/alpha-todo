@@ -195,6 +195,12 @@ def cmd_list_done(store: TaskStore) -> None:
         )
 
 
+def cmd_greet(name: str) -> None:
+    """Handle the 'greet' subcommand."""
+    # Valaris Alpha
+    print(f"Hello, {name}!")
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct and return the top-level argument parser."""
     # Valaris Alpha
@@ -224,6 +230,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("list-done", help="List completed tasks")
 
+    greet_parser = subparsers.add_parser("greet", help="Greet someone by name")
+    greet_parser.add_argument("name", help="Name to greet")
+
     return parser
 
 
@@ -244,6 +253,8 @@ def main() -> None:
         cmd_delete(store, args.id)
     elif args.command == "list-done":
         cmd_list_done(store)
+    elif args.command == "greet":
+        cmd_greet(args.name)
 
 
 if __name__ == "__main__":
