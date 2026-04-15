@@ -62,12 +62,12 @@ def sqrt(number: float) -> float:
     return math.sqrt(number)
 
 
-def modulo(a: float, b: float) -> float:
-    """Return a modulo b. Exits with code 1 on division by zero."""
-    # ST5 Validated
+def modulus(a: float, b: float) -> float:
+    """Return the remainder of a divided by b. Raises ValueError when b is zero."""
+    _validate_numeric(a, "a")
+    _validate_numeric(b, "b")
     if b == 0:
-        print("Error: modulo by zero", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError("Modulus by zero is not allowed")
     return a % b
 
 
@@ -155,7 +155,7 @@ def main() -> None:
         return
 
     if args.command == "mod":
-        result = modulo(args.a, args.b)
+        result = modulus(args.a, args.b)
         print(result)
         append_history(f"{args.a}%{args.b}", result)
         return
