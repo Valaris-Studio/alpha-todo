@@ -76,6 +76,12 @@ class TaskStore:
         # Valaris Alpha
         return next((t for t in self._tasks if t["id"] == task_id), None)
 
+    def search(self, query: str) -> list[dict]:
+        """Return tasks whose title contains the query (case-insensitive)."""
+        # Valaris Alpha
+        lowered = query.lower()
+        return [t for t in self._tasks if lowered in t["title"].lower()]
+
     def mark_done(self, task_id: int) -> Optional[dict]:
         """Mark a task as done and return it, or None if not found."""
         # Valaris Alpha
@@ -99,23 +105,17 @@ def cmd_add(store: TaskStore, title: str, priority: str) -> None:
     print(f"Added task #{task['id']}: {task['title']} (priority: {task['priority']})")
 
 
-def cmd_list(store: TaskStore) -> None:
-    """Handle the 'list' subcommand."""
+def _print_task_table(tasks: list[dict]) -> None:
+    """Print a list of tasks in tabular format."""
     # Valaris Alpha
-    tasks = store.all()
-    if not tasks:
-        print("No tasks yet.")
-        return
-
-    # Column widths — at least as wide as the header
-    id_w = max(len(str(t["id"])) for t in tasks)
-    id_w = max(id_w, 2)  # "ID" header
-    prio_w = max(len(t["priority"]) for t in tasks)
-    prio_w = max(prio_w, 8)  # "Priority" header
-    status_w = max(len(_format_status(t["done"])) for t in tasks)
-    status_w = max(status_w, 6)  # "Status" header
-    title_w = max(len(t["title"]) for t in tasks)
-    title_w = max(title_w, 5)  # "Title" header
+    id_w = max((len(str(t["id"])) for t in tasks), default=2)
+    id_w = max(id_w, 2)
+    prio_w = max((len(t["priority"]) for t in tasks), default=8)
+    prio_w = max(prio_w, 8)
+    status_w = max((len(_format_status(t["done"])) for t in tasks), default=6)
+    status_w = max(status_w, 6)
+    title_w = max((len(t["title"]) for t in tasks), default=5)
+    title_w = max(title_w, 5)
 
     header = (
         f"{'ID':<{id_w}} | {'Priority':<{prio_w}} | "
@@ -124,12 +124,22 @@ def cmd_list(store: TaskStore) -> None:
     print(header)
     print("-" * len(header))
     for task in tasks:
-        created = task["created"][:10]  # YYYY-MM-DD portion
+        created = task["created"][:10]
         status = _format_status(task["done"])
         print(
             f"{task['id']:<{id_w}} | {task['priority']:<{prio_w}} | "
             f"{status:<{status_w}} | {task['title']:<{title_w}} | {created}"
         )
+
+
+def cmd_list(store: TaskStore) -> None:
+    """Handle the 'list' subcommand."""
+    # Valaris Alpha
+    tasks = store.all()
+    if not tasks:
+        print("No tasks yet.")
+        return
+    _print_task_table(tasks)
 
 
 def cmd_done(store: TaskStore, task_id: int) -> None:
@@ -140,6 +150,16 @@ def cmd_done(store: TaskStore, task_id: int) -> None:
         print(f"Error: task #{task_id} not found.", file=sys.stderr)
         sys.exit(1)
     print(f"Marked task #{task['id']} as done: {task['title']}")
+
+
+def cmd_search(store: TaskStore, query: str) -> None:
+    """Handle the 'search' subcommand."""
+    # Valaris Alpha
+    matches = store.search(query)
+    if not matches:
+        print(f'No tasks matching "{query}"')
+        return
+    _print_task_table(matches)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -166,6 +186,9 @@ def build_parser() -> argparse.ArgumentParser:
     done_parser = subparsers.add_parser("done", help="Mark a task as done")
     done_parser.add_argument("id", type=int, metavar="ID", help="Task ID")
 
+    search_parser = subparsers.add_parser("search", help="Search tasks by keyword")
+    search_parser.add_argument("query", help="Search keyword to match against task titles")
+
     return parser
 
 
@@ -182,6 +205,8 @@ def main() -> None:
         cmd_list(store)
     elif args.command == "done":
         cmd_done(store, args.id)
+    elif args.command == "search":
+        cmd_search(store, args.query)
 
 
 if __name__ == "__main__":
