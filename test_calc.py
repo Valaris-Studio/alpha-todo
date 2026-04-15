@@ -1,8 +1,8 @@
-"""Tests for divide, power, sqrt, append_history, and show_history in calc.py."""
+"""Tests for divide, power, sqrt, percentage, append_history, and show_history in calc.py."""
 
 import pytest
 import calc
-from calc import divide, power, sqrt, append_history, show_history
+from calc import divide, power, sqrt, append_history, show_history, percentage
 
 
 def test_divide_normal_values():
@@ -52,6 +52,42 @@ def test_sqrt_negative_exits(capsys):
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
     assert "Error" in captured.err
+
+
+class TestPercentage:
+    def test_basic_percentage(self):
+        """Verify that 50% of 200 equals 100."""
+        assert percentage(200, 50) == 100.0
+
+    def test_zero_percent(self):
+        """Verify that 0% of any value returns 0."""
+        assert percentage(500, 0) == 0.0
+
+    def test_hundred_percent(self):
+        """Verify that 100% of a value returns the value itself."""
+        assert percentage(75, 100) == 75.0
+
+    def test_negative_value(self):
+        """Verify that negative base values are handled correctly."""
+        assert percentage(-200, 50) == -100.0
+
+    def test_negative_percent(self):
+        """Verify that negative percentages return a negative result."""
+        assert percentage(200, -50) == -100.0
+
+    def test_non_numeric_value_raises_value_error(self):
+        """Verify that a non-numeric value argument raises ValueError."""
+        with pytest.raises(ValueError, match="value must be numeric"):
+            percentage("hello", 50)
+
+    def test_non_numeric_percent_raises_value_error(self):
+        """Verify that a non-numeric percent argument raises ValueError."""
+        with pytest.raises(ValueError, match="percent must be numeric"):
+            percentage(100, "fifty")
+
+    def test_fractional_percentage(self):
+        """Verify that fractional percentages are calculated accurately."""
+        assert percentage(200, 12.5) == 25.0
 
 
 class TestAppendHistory:
