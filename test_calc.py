@@ -2,7 +2,7 @@
 
 import pytest
 import calc
-from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus
+from calc import add, subtract, multiply, divide, power, append_history, show_history, modulus, square_root
 
 
 class TestTypeValidation:
@@ -75,21 +75,18 @@ def test_power_zero_exponent():
 
 def test_sqrt_positive_number():
     # ST5 Validated
-    assert sqrt(9) == 3.0
+    assert square_root(9) == 3.0
 
 
 def test_sqrt_zero():
     # ST5 Validated
-    assert sqrt(0) == 0.0
+    assert square_root(0) == 0.0
 
 
-def test_sqrt_negative_exits(capsys):
+def test_sqrt_negative_raises_value_error():
     # ST5 Validated
-    with pytest.raises(SystemExit) as exc_info:
-        sqrt(-1)
-    assert exc_info.value.code == 1
-    captured = capsys.readouterr()
-    assert "Error" in captured.err
+    with pytest.raises(ValueError, match="non-negative"):
+        square_root(-1)
 
 
 class TestModulus:
@@ -114,6 +111,30 @@ class TestModulus:
         """Verify modulus raises TypeError for non-numeric inputs."""
         with pytest.raises(TypeError):
             modulus("5", 3)
+
+
+class TestSquareRoot:
+    def test_perfect_square(self):
+        """Verify square_root returns exact result for a perfect square."""
+        assert square_root(9) == 3.0
+
+    def test_zero(self):
+        """Verify square_root of 0 returns 0."""
+        assert square_root(0) == 0.0
+
+    def test_non_perfect_square(self):
+        """Verify square_root of 2 is approximately 1.414."""
+        assert abs(square_root(2) - 1.4142135623730951) < 1e-9
+
+    def test_negative_raises_value_error(self):
+        """Verify square_root raises ValueError for negative input."""
+        with pytest.raises(ValueError, match="non-negative"):
+            square_root(-1)
+
+    def test_invalid_type_raises_type_error(self):
+        """Verify square_root raises TypeError for non-numeric input."""
+        with pytest.raises(TypeError):
+            square_root("4")
 
 
 class TestAppendHistory:

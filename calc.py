@@ -53,14 +53,6 @@ def power(base: float, exponent: float) -> float:
     return base ** exponent
 
 
-def sqrt(number: float) -> float:
-    """Return the square root of number. Exits with code 1 for negative input."""
-    # ST5 Validated
-    if number < 0:
-        print("Error: square root of negative number", file=sys.stderr)
-        sys.exit(1)
-    return math.sqrt(number)
-
 
 def modulus(a: float, b: float) -> float:
     """Return the remainder of a divided by b. Raises ValueError when b is zero."""
@@ -69,6 +61,14 @@ def modulus(a: float, b: float) -> float:
     if b == 0:
         raise ValueError("Modulus by zero is not allowed")
     return a % b
+
+
+def square_root(x: float) -> float:
+    """Return the square root of x. Raises ValueError for negative inputs."""
+    _validate_numeric(x, "x")
+    if x < 0:
+        raise ValueError("square_root input must be non-negative")
+    return math.sqrt(x)
 
 
 def absolute(number: float) -> float:
@@ -149,7 +149,7 @@ def main() -> None:
         return
 
     if args.command == "sqrt":
-        result = sqrt(args.number)
+        result = square_root(args.number)
         print(result)
         append_history(f"sqrt({args.number})", result)
         return
