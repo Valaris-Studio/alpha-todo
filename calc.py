@@ -66,6 +66,21 @@ def absolute(number: float) -> float:
     return abs(number)
 
 
+PERCENTAGE_DIVISOR = 100
+
+
+def percentage(value: float, percent: float) -> float:
+    """Return the given percent of value (i.e. value * percent / 100).
+
+    Raises ValueError if either argument is not numeric.
+    """
+    if not isinstance(value, (int, float)):
+        raise ValueError(f"value must be numeric, got {type(value).__name__}")
+    if not isinstance(percent, (int, float)):
+        raise ValueError(f"percent must be numeric, got {type(percent).__name__}")
+    return value * percent / PERCENTAGE_DIVISOR
+
+
 def append_history(expression: str, result: float) -> None:
     """Append a calculation entry to ~/.calc_history in 'expr=result' format."""
     # ST5 Validated
@@ -112,6 +127,10 @@ def build_parser() -> argparse.ArgumentParser:
     abs_sub = subparsers.add_parser("abs", help="Compute absolute value of a number")
     abs_sub.add_argument("number", type=float, help="Number to take absolute value of")
 
+    pct_sub = subparsers.add_parser("percentage", help="Compute percent of a value")
+    pct_sub.add_argument("value", type=float, help="Base value")
+    pct_sub.add_argument("percent", type=float, help="Percentage to apply")
+
     history_sub = subparsers.add_parser("history", help="Show recent calculation history")
     history_sub.add_argument(
         "--last", type=int, default=10, metavar="N",
@@ -153,6 +172,12 @@ def main() -> None:
         result = absolute(args.number)
         print(result)
         append_history(f"abs({args.number})", result)
+        return
+
+    if args.command == "percentage":
+        result = percentage(args.value, args.percent)
+        print(result)
+        append_history(f"{args.percent}%of{args.value}", result)
         return
 
     operations = {
