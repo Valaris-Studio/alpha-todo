@@ -8,21 +8,30 @@ import sys
 HISTORY_FILE = os.path.expanduser("~/.calc_history")
 
 
+def _validate_numeric(value: object, name: str) -> None:
+    """Raise TypeError if value is not int or float (bool excluded)."""
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        raise TypeError(f"{name} must be int or float, got {type(value).__name__}")
+
+
 def add(a: float, b: float) -> float:
     """Return the sum of a and b."""
-    # ST5 Validated
+    _validate_numeric(a, "a")
+    _validate_numeric(b, "b")
     return a + b
 
 
 def subtract(a: float, b: float) -> float:
     """Return the difference of a minus b."""
-    # ST5 Validated
+    _validate_numeric(a, "a")
+    _validate_numeric(b, "b")
     return a - b
 
 
 def multiply(a: float, b: float) -> float:
     """Return the product of a and b."""
-    # ST5 Validated
+    _validate_numeric(a, "a")
+    _validate_numeric(b, "b")
     return a * b
 
 
@@ -31,6 +40,8 @@ DIVISION_BY_ZERO_MESSAGE = "Division by zero is not allowed"
 
 def divide(a: float, b: float) -> float:
     """Return the quotient of a divided by b. Raises ValueError on division by zero."""
+    _validate_numeric(a, "a")
+    _validate_numeric(b, "b")
     if b == 0:
         raise ValueError(DIVISION_BY_ZERO_MESSAGE)
     return a / b
