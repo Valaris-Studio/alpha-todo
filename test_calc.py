@@ -2,7 +2,7 @@
 
 import pytest
 import calc
-from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus
+from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus, floor_val, ceil_val
 
 
 class TestTypeValidation:
@@ -114,6 +114,44 @@ class TestModulus:
         """Verify modulus raises TypeError for non-numeric inputs."""
         with pytest.raises(TypeError):
             modulus("5", 3)
+
+
+class TestFloorVal:
+    def test_positive_float(self):
+        """Verify floor_val rounds down for positive float."""
+        assert floor_val(3.7) == 3
+
+    def test_negative_float(self):
+        """Verify floor_val rounds down (more negative) for negative float."""
+        assert floor_val(-2.3) == -3
+
+    def test_integer_input(self):
+        """Verify floor_val returns the integer unchanged when input is whole."""
+        assert floor_val(5.0) == 5
+
+    def test_invalid_input_raises_type_error(self):
+        """Verify floor_val raises TypeError for non-numeric input."""
+        with pytest.raises(TypeError):
+            floor_val("3.5")
+
+
+class TestCeilVal:
+    def test_positive_float(self):
+        """Verify ceil_val rounds up for positive float."""
+        assert ceil_val(3.2) == 4
+
+    def test_negative_float(self):
+        """Verify ceil_val rounds up (less negative) for negative float."""
+        assert ceil_val(-2.7) == -2
+
+    def test_integer_input(self):
+        """Verify ceil_val returns the integer unchanged when input is whole."""
+        assert ceil_val(5.0) == 5
+
+    def test_invalid_input_raises_type_error(self):
+        """Verify ceil_val raises TypeError for non-numeric input."""
+        with pytest.raises(TypeError):
+            ceil_val(None)
 
 
 class TestAppendHistory:

@@ -77,6 +77,18 @@ def absolute(number: float) -> float:
     return abs(number)
 
 
+def floor_val(x: float) -> int:
+    """Return the largest integer less than or equal to x."""
+    _validate_numeric(x, "x")
+    return math.floor(x)
+
+
+def ceil_val(x: float) -> int:
+    """Return the smallest integer greater than or equal to x."""
+    _validate_numeric(x, "x")
+    return math.ceil(x)
+
+
 def append_history(expression: str, result: float) -> None:
     """Append a calculation entry to ~/.calc_history in 'expr=result' format."""
     # ST5 Validated
@@ -123,6 +135,12 @@ def build_parser() -> argparse.ArgumentParser:
     abs_sub = subparsers.add_parser("abs", help="Compute absolute value of a number")
     abs_sub.add_argument("number", type=float, help="Number to take absolute value of")
 
+    floor_sub = subparsers.add_parser("floor", help="Compute floor of a number")
+    floor_sub.add_argument("x", type=float, help="Number to take floor of")
+
+    ceil_sub = subparsers.add_parser("ceil", help="Compute ceiling of a number")
+    ceil_sub.add_argument("x", type=float, help="Number to take ceiling of")
+
     history_sub = subparsers.add_parser("history", help="Show recent calculation history")
     history_sub.add_argument(
         "--last", type=int, default=10, metavar="N",
@@ -164,6 +182,18 @@ def main() -> None:
         result = absolute(args.number)
         print(result)
         append_history(f"abs({args.number})", result)
+        return
+
+    if args.command == "floor":
+        result = floor_val(args.x)
+        print(result)
+        append_history(f"floor({args.x})", result)
+        return
+
+    if args.command == "ceil":
+        result = ceil_val(args.x)
+        print(result)
+        append_history(f"ceil({args.x})", result)
         return
 
     operations = {
