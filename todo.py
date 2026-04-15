@@ -162,8 +162,8 @@ def cmd_delete(store: TaskStore, task_id: int) -> None:
     # Valaris Alpha
     task = store.delete(task_id)
     if task is None:
-        print("Task not found")
-        return
+        print(f"Error: task #{task_id} not found.", file=sys.stderr)
+        sys.exit(1)
     print(f"Deleted task #{task['id']}: {task['title']}")
 
 
