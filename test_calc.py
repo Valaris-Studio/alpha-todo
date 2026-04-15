@@ -2,7 +2,7 @@
 
 import pytest
 import calc
-from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history
+from calc import add, subtract, multiply, divide, power, sqrt, append_history, show_history, modulus
 
 
 class TestTypeValidation:
@@ -90,6 +90,30 @@ def test_sqrt_negative_exits(capsys):
     assert exc_info.value.code == 1
     captured = capsys.readouterr()
     assert "Error" in captured.err
+
+
+class TestModulus:
+    def test_positive_remainder(self):
+        """Verify modulus returns correct remainder for positive inputs."""
+        assert modulus(10, 3) == 1.0
+
+    def test_zero_dividend(self):
+        """Verify modulus returns zero when dividend is zero."""
+        assert modulus(0, 5) == 0.0
+
+    def test_float_inputs(self):
+        """Verify modulus works with float inputs."""
+        assert modulus(7.5, 2.5) == 0.0
+
+    def test_zero_divisor_raises_value_error(self):
+        """Verify modulus raises ValueError when divisor is zero."""
+        with pytest.raises(ValueError, match="Modulus by zero is not allowed"):
+            modulus(5, 0)
+
+    def test_invalid_input_raises_type_error(self):
+        """Verify modulus raises TypeError for non-numeric inputs."""
+        with pytest.raises(TypeError):
+            modulus("5", 3)
 
 
 class TestAppendHistory:
